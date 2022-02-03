@@ -298,6 +298,7 @@ export interface CommonNativeWebViewProps extends ViewProps {
   // TODO: find a better way to type this.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   source: any;
+  sendValuetoLib?: string;
   userAgent?: string;
   /**
    * Append to the existing user-agent. Overridden if `userAgent` is set.
@@ -1169,6 +1170,12 @@ export interface WebViewSharedProps extends ViewProps {
    * on the first load.
    */
   startInLoadingState?: boolean;
+
+  /**
+   * Send a value as a string to lib (android)
+   * on the first load.
+   */
+   sendValuetoLib?: string;
 
   /**
    * Set this to provide JavaScript that will be injected into the web page
