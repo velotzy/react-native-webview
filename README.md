@@ -1,4 +1,4 @@
-# React Native WebView - a Modern, Cross-Platform WebView for React Native
+# React Native WebView - a Modern, Cross-Platform WebView for React Native [FORKED by loiszaga]
 
 [![star this repo](http://githubbadges.com/star.svg?user=react-native-webview&repo=react-native-webview&style=flat)](https://github.com/react-native-webview/react-native-webview)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
