@@ -147,7 +147,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
   protected static final String REACT_CLASS = "RNCWebView";
   protected static final String HTML_ENCODING = "UTF-8";
   protected static final String HTML_MIME_TYPE = "text/html";
-  protected static final String JAVASCRIPT_INTERFACE = "ReactNativeWebView";
+  protected static final String JAVASCRIPT_INTERFACE = "moleawiz";
   protected static final String HTTP_METHOD_POST = "POST";
   // Use `webView.loadUrl("about:blank")` to reliably reset the view
   // state and release page resources (including any running JavaScript).
@@ -449,6 +449,11 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
   @ReactProp(name = "saveFormDataDisabled")
   public void setSaveFormDataDisabled(WebView view, boolean disable) {
     view.getSettings().setSaveFormData(!disable);
+  }
+
+  @ReactProp(name = "sendValuetoLib")
+  public void setSaveValuefromApps(WebView view, @Nullable String value) {
+    ((RNCWebView) view).setValuefromApps(value);
   }
 
   @ReactProp(name = "injectedJavaScript")
@@ -1224,6 +1229,14 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
 
     @Override
     public boolean onConsoleMessage(ConsoleMessage message) {
+      //show log from console message
+      try {
+        ((RNCWebView) mWebView).onMessage(((RNCWebView) mWebView).putIntoJSON("ConsoleMessage", message.message()));
+      }
+      catch(Exception e) {
+          Log.e("consoleMessage", "error : "+e);
+      }
+
       if (ReactBuildConfig.DEBUG) {
         return super.onConsoleMessage(message);
       }
@@ -1470,6 +1483,8 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     String injectedJS;
     protected @Nullable
     String injectedJSBeforeContentLoaded;
+    protected @Nullable
+    String valueFromApps;
 
     /**
      * android.webkit.WebChromeClient fundamentally does not support JS injection into frames other
@@ -1600,6 +1615,10 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
 
     public void setInjectedJavaScriptBeforeContentLoadedForMainFrameOnly(boolean enabled) {
       injectedJavaScriptBeforeContentLoadedForMainFrameOnly = enabled;
+    }
+
+    public void setValuefromApps(@Nullable String value) {
+      valueFromApps = value;
     }
 
     protected RNCWebViewBridge createRNCWebViewBridge(RNCWebView webView) {
@@ -1770,6 +1789,79 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
       public void postMessage(String message) {
         mContext.onMessage(message);
       }
+
+      @JavascriptInterface
+      public void debug(String msg){
+        mContext.onMessage(putIntoJSON("debug", msg));
+      }
+
+      @JavascriptInterface
+      public void tester(String msg){
+        mContext.onMessage(putIntoJSON("tester", msg));
+      }
+
+      @JavascriptInterface
+      public String getUserID(){
+          return getValuefromJSON("user_id", valueFromApps);
+      }
+
+      @JavascriptInterface
+      public void onModuleComplete() {
+        mContext.onMessage(putIntoJSON("onModuleComplete", ""));
+      }
+
+      @JavascriptInterface
+      public void finishModule(){
+        mContext.onMessage(putIntoJSON("onfinishModule", ""));
+      }
+
+      @JavascriptInterface
+      public void saveOffline(String offlinedata){
+        mContext.onMessage(putIntoJSON("saveOfflineSCORM", offlinedata));
+      }
+
+      @JavascriptInterface
+      public void sendCommand(String command){
+        mContext.onMessage(putIntoJSON("sendCommand", command));
+      }
+    }
+
+    public String putIntoJSON(String key, String message){
+        String jsonMessage     = "";
+        JSONObject convertJSON = null;
+        try {
+          convertJSON = new JSONObject();
+          convertJSON.put("key", key);
+          convertJSON.put("message", message);
+          //put into string
+          // jsonMessage = convertJSON.toString().replaceAll("\\\\", "");
+          jsonMessage = convertJSON.toString();
+        } catch (JSONException e) {
+          Log.e("ConvertJSON", "error : "+e);
+          //put into string
+          jsonMessage = "";
+        }  
+        return jsonMessage;
+    }
+    
+    public String getValuefromJSON(String key, String data){
+        String dataToReturn = "";
+        
+        if (data != ""){
+          try {
+            JSONObject object = new JSONObject(data);
+            
+            if (!object.getString(key).equalsIgnoreCase("")){
+                dataToReturn = object.getString(key);
+            }
+          } catch (JSONException e) {
+            Log.e("getValuefromJSON", "error : "+e);
+  
+            //put into string
+            dataToReturn = "";
+          }
+        }
+        return dataToReturn;
     }
 
     protected static class ProgressChangedFilter {
