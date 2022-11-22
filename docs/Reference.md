@@ -44,6 +44,7 @@ This document lays out the current public properties and methods for the React N
 - [`applicationNameForUserAgent`](Reference.md#applicationNameForUserAgent)
 - [`allowsFullscreenVideo`](Reference.md#allowsfullscreenvideo)
 - [`allowsInlineMediaPlayback`](Reference.md#allowsinlinemediaplayback)
+- [`allowsAirPlayForMediaPlayback`](Reference.md#allowsAirPlayForMediaPlayback)
 - [`bounces`](Reference.md#bounces)
 - [`overScrollMode`](Reference.md#overscrollmode)
 - [`contentInset`](Reference.md#contentinset)
@@ -84,7 +85,10 @@ This document lays out the current public properties and methods for the React N
 - [`basicAuthCredential`](Reference.md#basicAuthCredential)
 - [`enableApplePay`](Reference.md#enableApplePay)
 - [`forceDarkOn`](Reference.md#forceDarkOn)
+- [`useWebView2`](Reference.md#useWebView2)
 - [`minimumFontSize`](Reference.md#minimumFontSize)
+- [`downloadingMessage`](Reference.md#downloadingMessage)
+- [`lackPermissionToDownloadMessage`](Reference.md#lackPermissionToDownloadMessage)
 
 ## Methods Index
 
@@ -573,11 +577,14 @@ url
 
 ### `onContentProcessDidTerminate`[⬆](#props-index)<!-- Link generated with jump2header -->
 
-Function that is invoked when the `WebView` content process is terminated.
+Function that is invoked when the `WebView` content process is terminated. 
 
 | Type     | Required | Platform                |
 | -------- | -------- | ----------------------- |
 | function | No       | iOS and macOS WKWebView |
+
+iOS Web views use a separate process to render and manage web content. WebKit calls this method when the process for the specified web view terminates for any reason. 
+The reason is not necessarily a crash. For instance, since iOS WebViews are not included in the total RAM of the app, they can be terminated independently of the app to liberate memory for new apps the user is opening. It's not unexpected to have WebViews get terminated after a while in the background.
 
 Example:
 
@@ -942,6 +949,15 @@ Boolean that determines whether HTML5 videos play inline or use the native full-
 | Type | Required | Platform |
 | ---- | -------- | -------- |
 | bool | No       | iOS      |
+
+---
+### `allowsAirPlayForMediaPlayback`[⬆](#props-index)<!-- Link generated with jump2header -->
+
+A Boolean value indicating whether AirPlay is allowed. The default value is `false`.
+
+| Type    | Required | Platform      |
+| ------- | -------- | ------------- |
+| boolean | No       | iOS and macOS |
 
 ---
 
@@ -1474,6 +1490,7 @@ Example:
 ### `forceDarkOn`
 
 Configuring Dark Theme
+
 *NOTE* : The force dark setting is not persistent. You must call the static method every time your app process is started.
 
 *NOTE* : The change from day<->night mode is a configuration change so by default the activity will be restarted and pickup the new values to apply the theme. Take care when overriding this default behavior to ensure this method is still called when changes are made.
@@ -1523,6 +1540,20 @@ An object that specifies the credentials of a user to be used for basic authenti
 | ------ | -------- |
 | object | No       |
 
+### `useWebView2`
+
+Use WinUI WebView2 control instead of WebView control as the native webview. The WebView2 control is a WinUI control that renders web content using the Microsoft Edge (Chromium) rendering engine. Option can be toggled at runtime and supports Fast Refresh.
+
+| Type    | Required | Platform |
+| ------- | -------- | -------- |
+| boolean | No       | Windows  |
+
+Example:
+
+```javascript
+<WebView useWebView2={true} />
+```
+
 ### `minimumFontSize`
 
 Android enforces a minimum font size based on this value. A non-negative integer between 1 and 72. Any number outside the specified range will be pinned. Default value is 8. If you are using smaller font sizes and are having trouble fitting the whole window onto one screen, try setting this to a smaller value.
@@ -1536,6 +1567,22 @@ Example:
 ```javascript
 <WebView minimumFontSize={1} />
 ```
+
+### `downloadingMessage`
+
+This is the message that is shown in the Toast when downloading a file via WebView. Default message is "Downloading".
+
+| Type   | Required | Platform |
+| ------ | -------- | -------- |
+| string | No       | Android  |
+
+### `lackPermissionToDownloadMessage`
+
+This is the message that is shown in the Toast when the webview is unable to download a file. Default message is "Cannot download files as permission was denied. Please provide permission to write to storage, in order to download files.".
+
+| Type   | Required | Platform |
+| ------ | -------- | -------- |
+| string | No       | Android  |
 
 ## Methods
 
@@ -1612,7 +1659,7 @@ Removes the autocomplete popup from the currently focused form field, if present
 (android only)
 
 ```javascript
-
+clearCache(true)
 ```
 
 Clears the resource cache. Note that the cache is per-application, so this will clear the cache for all WebViews used. [developer.android.com reference](<https://developer.android.com/reference/android/webkit/WebView.html#clearCache(boolean)>)
